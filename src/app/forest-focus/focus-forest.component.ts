@@ -17,7 +17,7 @@ export class FocusForestComponent implements OnInit, OnDestroy {
 
   listActivated: boolean = false
   forestType = 'autumn'
-  forestTypes = ['autumn', 'summer']
+  forestTypes = ['autumn']
   nextId = 1
 
   focusActive: boolean = false
