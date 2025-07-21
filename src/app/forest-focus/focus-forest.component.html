@@ -1,0 +1,41 @@
+<div class="container">
+  <h1>🌲 Focus Forest 🌲</h1>
+
+  <div class="container-actions">
+
+    <div>
+      <label>Choose your forest type :</label>
+    </div>
+    <div class="dropdown">
+
+      <div class="select-box" (click)="showHideList()">
+        @if (!!forestType) {
+        {{forestType}}
+        }
+
+      </div>
+      @if (listActivated) {
+      <ul class="list-types">
+        @for (type of forestTypes; track type) {
+        <li (click)="forestType = type" [class.selected]="forestType === type">
+          {{type}}
+        </li>
+        }
+      </ul>
+      }
+    </div>
+    <button class="focus-btn" type="button" (click)="startFocus()" [disabled]="focusActive">Focus</button>
+    <button class="focus-btn" type="button" (click)="stopFocus()" [disabled]="!focusActive">Stop Focus</button>
+    <button class="focus-btn" type="button" (click)="deleteForest()" [disabled]="!firstFocusActivated">Reset
+      Forest</button>
+  </div>
+
+  <div>
+    @if (firstFocusActivated) {
+    <p class="timer">⏱️ Time focused: {{ formattedTimer }}</p>
+    }
+  </div>
+
+  <app-canvas-forest></app-canvas-forest>
+
+</div>
