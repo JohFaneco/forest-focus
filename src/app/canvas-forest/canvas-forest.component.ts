@@ -1,7 +1,7 @@
-import { AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { TreeImage } from '../models/treeImage';
 import { Coordinate } from '../models/coordinate';
-import { filter, from, of, switchMap, tap } from 'rxjs';
+import { filter, from, Observable, of, switchMap, tap } from 'rxjs';
 import { ForestControlService } from '../service/forest-control.service';
 
 @Component({
@@ -14,18 +14,22 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
   @ViewChild('forestCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('canvasWrapper', { static: false }) canvasWrapper!: ElementRef<HTMLElement>;
 
   trees: Array<TreeImage> = []
 
   grassImg!: HTMLImageElement
+
+  canvasWidth!: number;
+  canvasHeight!: number;
 
   private ctx!: CanvasRenderingContext2D;
 
   private tileWidth: number = 64
   private tileHeight: number = 32
 
-  private mapCols: number = 15
-  private mapRows: number = 15
+  private mapCols!: number
+  private mapRows!: number
 
   private offsetX!: number
   private offsetY!: number
@@ -35,7 +39,9 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private forestControlService: ForestControlService = inject(ForestControlService)
 
-  private timeToGrow: number = 1 * 1
+  private timeToGrow: number = 60 * 300
+
+  constructor(private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.listenOnDestroyForest()
@@ -45,16 +51,48 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-
-    this.initImages()
-
+    this.initSizeCanvas()
+    this.cdr.detectChanges();
     const canvas = this.canvasRef.nativeElement;
+    this.initImages()
     this.ctx = canvas.getContext('2d')!;
-
-    this.offsetX = canvas.width / 2
-    this.offsetY = 100
-
     this.waitImagesAndDraw()
+  }
+
+
+  /**
+   * Init the width, the height and the number of tiles of the Canvas
+   */
+  private initSizeCanvas() {
+
+    const wrapperTop = this.canvasWrapper.nativeElement.getBoundingClientRect().top
+
+    const hScreen = window.innerHeight
+    const wScreen = window.innerWidth
+
+    this.canvasWidth = wScreen
+    this.canvasHeight = hScreen - wrapperTop;
+
+    this.offsetX = wScreen / 2
+    this.offsetY = 0
+    let maxTiles: number;
+
+    // let a space for wide screens, enough to show the images
+    if (wScreen > hScreen) {
+      this.offsetY = this.tileHeight * 4
+    }
+
+    const maxTilesHeight = Math.floor((hScreen - wrapperTop - this.offsetY) / this.tileHeight)
+    const maxTilesWidth = Math.floor(wScreen / this.tileWidth)
+
+    // define the tiles we can configure
+    maxTiles = Math.min(maxTilesHeight, maxTilesWidth)
+    const gridPixelHeight = (maxTiles * 2) * (this.tileHeight / 2)
+    this.offsetY = (this.canvasHeight / 2) - (gridPixelHeight / 2)
+
+    this.mapCols = this.mapRows = maxTiles
+
+
   }
 
   /**
@@ -100,7 +138,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       switchMap(() => this.forestControlService.elapsedSeconds$),
       filter(seconds => seconds !== 0 && (seconds === 10 || (seconds % this.timeToGrow === 0)))
     ).subscribe((seconds: number) => {
-      console.log(seconds)
       this.generateCoordinatesTree()
     })
   }

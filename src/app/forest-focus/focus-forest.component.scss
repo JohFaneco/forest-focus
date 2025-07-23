@@ -1,14 +1,19 @@
-$size-grid-tile: 120px;
-
 .container {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  div:last-child {
+    align-self: center;
+  }
 }
+
 h1 {
-  padding: 0px 10px 50px 10px;
+  align-self: center;
+  padding-bottom: 50px;
   color: #32f613;
   font-size: 2.5rem;
-  // font-weight: 700;
-  text-shadow: 2px 2px 1px;
+  text-shadow: 1px 1px 1px;
+  margin: 2rem 0.5rem;
 }
 
 h1,
@@ -32,11 +37,14 @@ label {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  gap: 1rem;
-}
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  row-gap: 1.2rem;
 
-.container-actions > div:nth-child(1) {
-  align-self: center;
+  margin: 0 10px;
+  div:nth-child(1) {
+    align-self: center;
+  }
 }
 
 .dropdown,
@@ -75,7 +83,7 @@ ul.list-types {
   overflow: hidden;
   padding: 10px;
   margin: 0;
-  transition: all 1s;
+  transition: all 0.5s;
 }
 
 li {
@@ -106,6 +114,13 @@ li {
   background-color: #99d699;
 }
 
-.timer {
-  font-weight: bold;
+.wrappedTimer {
+  position: absolute;
+  bottom: 0%;
+  .timer {
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    font-size: 1.5rem;
+  }
 }

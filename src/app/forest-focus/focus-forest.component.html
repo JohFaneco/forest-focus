@@ -30,12 +30,14 @@
       Forest</button>
   </div>
 
-  <div>
+  <app-canvas-forest></app-canvas-forest>
+
+   <!-- Timer -->
+  <div class="wrappedTimer">
     @if (firstFocusActivated) {
-    <p class="timer">⏱️ Time focused: {{ formattedTimer }}</p>
+      <p class="timer">⏱️ Time focused: {{ formattedTimer }}</p>
     }
   </div>
-
-  <app-canvas-forest></app-canvas-forest>
+  <!-- Timer -->
 
 </div>
