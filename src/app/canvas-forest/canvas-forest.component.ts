@@ -39,7 +39,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private forestControlService: ForestControlService = inject(ForestControlService)
 
-  private timeToGrow: number = 60 * 300
+  private timeToGrow: number = 60 * 3
 
   constructor(private cdr: ChangeDetectorRef) { }
 
