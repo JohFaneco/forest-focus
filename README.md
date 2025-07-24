@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🌲 forest-focus
 
 Little app to stay focused while your forest is growing.  
