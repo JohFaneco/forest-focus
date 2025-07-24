@@ -1,8 +1,9 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { TreeImage } from '../models/treeImage';
 import { Coordinate } from '../models/coordinate';
-import { filter, from, Observable, of, switchMap, tap } from 'rxjs';
+import { filter, from, of, switchMap, tap } from 'rxjs';
 import { ForestControlService } from '../service/forest-control.service';
+import { LocalStorageService } from '../service/local-storage.service';
 
 @Component({
   selector: 'app-canvas-forest',
@@ -39,7 +40,11 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private forestControlService: ForestControlService = inject(ForestControlService)
 
+  private localStorageService: LocalStorageService = inject(LocalStorageService)
+
   private timeToGrow: number = 60 * 3
+
+  private saveIntervalSeconds: number = 5
 
   constructor(private cdr: ChangeDetectorRef) { }
 
@@ -57,6 +62,14 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     this.initImages()
     this.ctx = canvas.getContext('2d')!;
     this.waitImagesAndDraw()
+
+    this.forestControlService.elapsedSeconds$
+      .pipe(
+        filter((seconds: number) => seconds > 0 && seconds % this.saveIntervalSeconds === 0)
+      )
+      .subscribe((seconds: number) => {
+        this.saveInLocalStorage()
+      })
   }
 
 
@@ -141,6 +154,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       this.generateCoordinatesTree()
     })
   }
+
   /**
    * Create a new image Tree
    * @param srcImage
@@ -336,6 +350,14 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
         })
       })
     );
+  }
+
+  /**
+   * Save the grid and the time every X seconds
+   */
+  private saveInLocalStorage(): void {
+    this.localStorageService.set("focutTime", Date.now().toString())
+    this.localStorageService.set("gridBusyTrees", this.busyCells)
   }
 
   /**
