@@ -32,7 +32,6 @@ Some of the trees and tiles come from this nice tileset:
 [Isometric 64x64 Outside Tileset](https://opengameart.org/content/isometric-64x64-outside-tileset)  
 Made by [Yar](https://opengameart.org/users/yar) – thanks!
 
-=======
 # FocusForest
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.5.
