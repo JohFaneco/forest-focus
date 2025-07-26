@@ -56,7 +56,14 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.initSizeCanvas()
+
+    // get from the localStorage or init a new grid configuration
+    if (this.localStorageService.get("mapCols")) {
+      this.initSiveCanvasFromStorage()
+    } else {
+      this.initSizeCanvas()
+    }
+
     this.cdr.detectChanges();
     const canvas = this.canvasRef.nativeElement;
     this.initImages()
@@ -72,6 +79,19 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       })
   }
 
+
+
+  /**
+   * Init the configuration of the grid from the localStorage
+   */
+  private initSiveCanvasFromStorage(): void {
+    this.mapCols = this.localStorageService.get("mapCols")!
+    this.mapRows = this.localStorageService.get("mapRows")!
+    this.offsetX = this.localStorageService.get("offsetX")!
+    this.offsetY = this.localStorageService.get("offsetY")!
+    this.canvasWidth = this.localStorageService.get("canvasWidth")!
+    this.canvasHeight = this.localStorageService.get("canvasHeight")!
+  }
 
   /**
    * Init the width, the height and the number of tiles of the Canvas
@@ -105,7 +125,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.mapCols = this.mapRows = maxTiles
 
-
+    this.saveCanvas()
   }
 
   /**
@@ -353,11 +373,23 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Save the grid and the time every X seconds
+   * Save the trees in the grid and the time every X seconds
    */
   private saveInLocalStorage(): void {
     this.localStorageService.set("focutTime", Date.now().toString())
     this.localStorageService.set("gridBusyTrees", this.busyCells)
+  }
+
+  /**
+   * Save the configuration of the grid
+   */
+  private saveCanvas(): void {
+    this.localStorageService.set("mapCols", this.mapCols)
+    this.localStorageService.set("mapRows", this.mapRows)
+    this.localStorageService.set("offsetX", this.offsetX)
+    this.localStorageService.set("offsetY", this.offsetY)
+    this.localStorageService.set("canvasWidth", this.canvasWidth)
+    this.localStorageService.set("canvasHeight", this.canvasHeight)
   }
 
   /**
@@ -372,6 +404,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     } else {
       console.log("No place anymore, we stop the counter :)")
       this.forestControlService.stopTimer()
+      this.localStorageService.clearAll()
     }
   }
 
@@ -384,6 +417,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       this.drawIsoGrid()
       this.busyCells.length = 0
       this.busyCells = []
+      this.localStorageService.clearAll()
     })
   }
 }

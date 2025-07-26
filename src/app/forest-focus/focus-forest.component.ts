@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms'
 import { HostListener } from '@angular/core'
 import { CanvasForestComponent } from "../canvas-forest/canvas-forest.component"
 import { ForestControlService } from '../service/forest-control.service'
+import { LocalStorageService } from '../service/local-storage.service'
 
 
 @Component({
@@ -25,6 +26,7 @@ export class FocusForestComponent implements OnInit, OnDestroy {
   formattedTimer: string = ""
 
   private forestControlService: ForestControlService = inject(ForestControlService)
+  private localStorageService: LocalStorageService = inject(LocalStorageService)
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent): void {
@@ -57,16 +59,17 @@ export class FocusForestComponent implements OnInit, OnDestroy {
     this.forestControlService.startTimer()
 
     this.forestControlService.elapsedSeconds$.subscribe((seconds: number) => {
-      console.log(seconds)
       this.formattedTimer = this.getFormattedTime(seconds)
     })
 
+    this.localStorageService.set("wasInBreak", false)
   }
 
   // Stops focus session and timers
   stopFocus(): void {
     this.focusActive = false
     this.forestControlService.stopTimer()
+    this.localStorageService.set("wasInBreak", true)
   }
 
   /**
