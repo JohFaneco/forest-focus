@@ -395,6 +395,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       this.generateAndSaveCoordinatedMissingTrees(missingTrees)
       this.regenerateGridAndTrees()
       this.loadGridFromLocalStorage = false
+      this.localStorageService.saveTimeAndTreeTiles(this.busyCells)
     }
   }
 
