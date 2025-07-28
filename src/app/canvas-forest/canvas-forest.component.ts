@@ -4,6 +4,8 @@ import { Coordinate } from '../models/coordinate';
 import { filter, from, of, switchMap, tap } from 'rxjs';
 import { ForestControlService } from '../service/forest-control.service';
 import { LocalStorageService } from '../service/local-storage.service';
+import { KeyLocalStorage } from '../models/keyLocalStorage';
+import { TreeService } from '../service/tree.service';
 
 @Component({
   selector: 'app-canvas-forest',
@@ -42,9 +44,19 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private localStorageService: LocalStorageService = inject(LocalStorageService)
 
-  private timeToGrow: number = 60 * 3
+  private treeService: TreeService = inject(TreeService)
 
-  private saveIntervalSeconds: number = 5
+  // private timeToGrow: number = 60 * 3
+
+  // Mock for test
+  private timeToGrow: number = 60
+
+  // private saveIntervalSeconds: number = 5
+
+  // Mock for test
+  private saveIntervalSeconds: number = 1
+
+  private loadGridFromLocalStorage: boolean = false
 
   constructor(private cdr: ChangeDetectorRef) { }
 
@@ -75,7 +87,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
         filter((seconds: number) => seconds > 0 && seconds % this.saveIntervalSeconds === 0)
       )
       .subscribe((seconds: number) => {
-        this.saveInLocalStorage()
+        this.localStorageService.saveTimeAndTreeTiles(this.busyCells)
       })
   }
 
@@ -91,6 +103,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     this.offsetY = this.localStorageService.get("offsetY")!
     this.canvasWidth = this.localStorageService.get("canvasWidth")!
     this.canvasHeight = this.localStorageService.get("canvasHeight")!
+    this.loadGridFromLocalStorage = true
   }
 
   /**
@@ -125,7 +138,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.mapCols = this.mapRows = maxTiles
 
-    this.saveCanvas()
+    this.localStorageService.saveCanvas(this.mapCols, this.mapRows, this.offsetX, this.offsetY, this.canvasWidth, this.canvasHeight)
   }
 
   /**
@@ -133,15 +146,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    */
   private initImages(): void {
     this.grassImg = this.createNewImg("assets/tiles/grass3.png")
-    this.trees = [
-      this.createNewTree("assets/trees/evergreen_conifer_small.png", 10),
-      this.createNewTree("assets/trees/evergreen_conifer_tall_autumn.png", 5),
-      this.createNewTree("assets/trees/evergreen_conifer_tall.png", 10),
-      this.createNewTree("assets/trees/conifer.png", 5),
-      this.createNewTree("assets/trees/conifer_autumn.png", 5),
-      this.createNewTree("assets/trees/dead_conifer.png", 2),
-      this.createNewTree("assets/trees/dead_conifer_tall.png", 2),
-    ]
+    this.trees = this.treeService.createTrees(this.createNewImg)
   }
 
   /**
@@ -156,7 +161,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Wait the tiles and the image's trees for loading, then start to listen
+   * Wait the tiles and the images trees for loading, then start to listen
    */
   private waitImagesAndDraw(): void {
     from(this.loadGrass()).pipe(
@@ -168,26 +173,15 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
           return from(of())
         }
       }),
+      tap(() => {
+        this.drawTreesFromLastSession()
+      }),
       switchMap(() => this.forestControlService.elapsedSeconds$),
       filter(seconds => seconds !== 0 && (seconds === 10 || (seconds % this.timeToGrow === 0)))
     ).subscribe((seconds: number) => {
       this.generateCoordinatesTree()
     })
   }
-
-  /**
-   * Create a new image Tree
-   * @param srcImage
-   * @param weight
-   * @param anchorYOffset
-   */
-  private createNewTree(srcImage: string, weight: number, anchorYOffset: number = 0): TreeImage {
-    const imgObj = this.createNewImg(srcImage) as TreeImage
-    imgObj.weight = weight
-    imgObj.anchorYOffset = anchorYOffset
-    return imgObj
-  }
-
 
   /**
    * Draw the entire grid based on the number of cols and rows, then place the grass tiles
@@ -280,35 +274,9 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * @param tileY
    */
   private saveCoordinatesTree(tileX: number, tileY: number) {
-    const treeToPlace = this.getRandomTree()
-    let coordinates = new Coordinate(tileX, tileY)
-    coordinates.treeImg = treeToPlace
-    this.busyCells.push(coordinates)
+    this.busyCells.push(this.treeService.createNewCoordinateTree(this.trees, tileX, tileY))
     this.sortArrayByCoordinates()
   }
-
-  /**
-   * Pick randomly a tree in the list according to the weights trees
-   */
-  private getRandomTree() {
-    // retrieve the weights
-    const weights = this.trees.map((tree: TreeImage) => tree.weight)
-
-    // create accumulative weights
-    const cumulativeWeights = weights.reduce((accumulative: Array<number>, current: number, currentIndex: number) => {
-      const acc = accumulative[currentIndex - 1] ? accumulative[currentIndex - 1] + current : current;
-      accumulative.push(acc)
-      return accumulative
-    }, [])
-
-
-    const randomScale = this.generateInt(cumulativeWeights[cumulativeWeights.length - 1])
-
-    const pickIndexTree = cumulativeWeights.findIndex(w => randomScale < w)
-
-    return this.trees[pickIndexTree]
-  }
-
 
   /**
    * Generate x, y randomly
@@ -336,7 +304,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       y: freeCells[iGenerated].y
     }
   }
-
 
   /**
    * Generate a random integer
@@ -373,38 +340,33 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Save the trees in the grid and the time every X seconds
-   */
-  private saveInLocalStorage(): void {
-    this.localStorageService.set("focutTime", Date.now().toString())
-    this.localStorageService.set("gridBusyTrees", this.busyCells)
-  }
-
-  /**
-   * Save the configuration of the grid
-   */
-  private saveCanvas(): void {
-    this.localStorageService.set("mapCols", this.mapCols)
-    this.localStorageService.set("mapRows", this.mapRows)
-    this.localStorageService.set("offsetX", this.offsetX)
-    this.localStorageService.set("offsetY", this.offsetY)
-    this.localStorageService.set("canvasWidth", this.canvasWidth)
-    this.localStorageService.set("canvasHeight", this.canvasHeight)
-  }
-
-  /**
    * Start a new counter to place trees in the grid
    */
   private generateCoordinatesTree(): void {
     const tileTreePosition = this.generateRandomCoordinates()
-    if (tileTreePosition.x !== null && tileTreePosition.y !== null) {
-      this.saveCoordinatesTree(tileTreePosition.x, tileTreePosition.y)
-      this.drawIsoGrid()
-      this.placeAllTrees()
+    if (this.treeService.isCoordinatesNotNull(tileTreePosition)) {
+      this.saveCoordinatesTree(tileTreePosition.x!, tileTreePosition.y!)
+      this.regenerateGridAndTrees()
     } else {
       console.log("No place anymore, we stop the counter :)")
       this.forestControlService.stopTimer()
       this.localStorageService.clearAll()
+    }
+  }
+
+  /**
+   * Generate all the coordinates of the missing trees since the last session
+   * @param numberTreesMissing
+   */
+  private generateAndSaveCoordinatedMissingTrees(numberTreesMissing: number): void {
+    if (numberTreesMissing === 0) return
+    for (let i = 0; i < numberTreesMissing; i++) {
+      const tileTreePosition = this.generateRandomCoordinates()
+      if (this.treeService.isCoordinatesNotNull(tileTreePosition)) {
+        this.saveCoordinatesTree(tileTreePosition.x!, tileTreePosition.y!)
+      } else {
+        break
+      }
     }
   }
 
@@ -419,5 +381,28 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       this.busyCells = []
       this.localStorageService.clearAll()
     })
+  }
+
+  /**
+   * Place the trees saved in the localStorage, if a session exist
+   */
+  private drawTreesFromLastSession(): void {
+    if (this.loadGridFromLocalStorage) {
+
+      const treesLastSession = this.localStorageService.get("gridBusyTrees") as Array<any>
+      this.busyCells = this.treeService.createBusyCellsFromLastSession(this.trees, treesLastSession)
+      const missingTrees = this.treeService.getNumberMissingTrees(this.timeToGrow, this.localStorageService.get("focusTime"))
+      this.generateAndSaveCoordinatedMissingTrees(missingTrees)
+      this.regenerateGridAndTrees()
+      this.loadGridFromLocalStorage = false
+    }
+  }
+
+  /**
+   * Regenerate the grid and the trees in the right order
+   */
+  private regenerateGridAndTrees(): void {
+    this.drawIsoGrid()
+    this.placeAllTrees()
   }
 }

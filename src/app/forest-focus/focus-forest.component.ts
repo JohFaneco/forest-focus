@@ -5,6 +5,7 @@ import { HostListener } from '@angular/core'
 import { CanvasForestComponent } from "../canvas-forest/canvas-forest.component"
 import { ForestControlService } from '../service/forest-control.service'
 import { LocalStorageService } from '../service/local-storage.service'
+import { KeyLocalStorage } from '../models/keyLocalStorage'
 
 
 @Component({
@@ -62,14 +63,14 @@ export class FocusForestComponent implements OnInit, OnDestroy {
       this.formattedTimer = this.getFormattedTime(seconds)
     })
 
-    this.localStorageService.set("wasInBreak", false)
+    this.localStorageService.set(KeyLocalStorage.Break, false)
   }
 
   // Stops focus session and timers
   stopFocus(): void {
     this.focusActive = false
     this.forestControlService.stopTimer()
-    this.localStorageService.set("wasInBreak", true)
+    this.localStorageService.set(KeyLocalStorage.Break, true)
   }
 
   /**
