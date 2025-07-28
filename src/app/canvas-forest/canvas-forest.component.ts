@@ -6,6 +6,7 @@ import { ForestControlService } from '../service/forest-control.service';
 import { LocalStorageService } from '../service/local-storage.service';
 import { KeyLocalStorage } from '../models/keyLocalStorage';
 import { TreeService } from '../service/tree.service';
+import { GridService } from '../service/grid.service';
 
 @Component({
   selector: 'app-canvas-forest',
@@ -45,6 +46,8 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   private localStorageService: LocalStorageService = inject(LocalStorageService)
 
   private treeService: TreeService = inject(TreeService)
+
+  private gridService: GridService = inject(GridService)
 
   // private timeToGrow: number = 60 * 3
 
@@ -278,40 +281,8 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     this.sortArrayByCoordinates()
   }
 
-  /**
-   * Generate x, y randomly
-  */
-  private generateRandomCoordinates() {
-    // all the tiles are filled, no place for a new tree
-    if (this.busyCells.length === this.allCells.length) {
-      return {
-        x: null,
-        y: null
-      }
-    }
 
-    // retrieve the free Cells
-    const freeCells = this.allCells.filter((cell: Coordinate) => {
-      return this.busyCells.every((busyCell: Coordinate) => {
-        return busyCell.x !== cell.x || busyCell.y !== cell.y
-      })
-    })
 
-    // among the freeCells, pick randomly an index
-    const iGenerated = this.generateInt(freeCells.length)
-    return {
-      x: freeCells[iGenerated].x,
-      y: freeCells[iGenerated].y
-    }
-  }
-
-  /**
-   * Generate a random integer
-   * @param max
-   */
-  private generateInt(max: number): number {
-    return Math.floor(Math.random() * max)
-  }
 
 
   /**
@@ -343,7 +314,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * Start a new counter to place trees in the grid
    */
   private generateCoordinatesTree(): void {
-    const tileTreePosition = this.generateRandomCoordinates()
+    const tileTreePosition = this.gridService.generateRandomCoordinates(this.allCells, this.busyCells)
     if (this.treeService.isCoordinatesNotNull(tileTreePosition)) {
       this.saveCoordinatesTree(tileTreePosition.x!, tileTreePosition.y!)
       this.regenerateGridAndTrees()
@@ -361,7 +332,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   private generateAndSaveCoordinatedMissingTrees(numberTreesMissing: number): void {
     if (numberTreesMissing === 0) return
     for (let i = 0; i < numberTreesMissing; i++) {
-      const tileTreePosition = this.generateRandomCoordinates()
+      const tileTreePosition = this.gridService.generateRandomCoordinates(this.allCells, this.busyCells)
       if (this.treeService.isCoordinatesNotNull(tileTreePosition)) {
         this.saveCoordinatesTree(tileTreePosition.x!, tileTreePosition.y!)
       } else {
