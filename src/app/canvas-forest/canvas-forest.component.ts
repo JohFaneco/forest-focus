@@ -54,11 +54,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   // Mock for test
   private timeToGrow: number = 60
 
-  // private saveIntervalSeconds: number = 5
-
-  // Mock for test
-  private saveIntervalSeconds: number = 1
-
   private loadGridFromLocalStorage: boolean = false
 
   constructor(private cdr: ChangeDetectorRef) { }
@@ -84,14 +79,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     this.initImages()
     this.ctx = canvas.getContext('2d')!;
     this.waitImagesAndDraw()
-
-    this.forestControlService.elapsedSeconds$
-      .pipe(
-        filter((seconds: number) => seconds > 0 && seconds % this.saveIntervalSeconds === 0)
-      )
-      .subscribe((seconds: number) => {
-        this.localStorageService.saveTimeAndTreeTiles(this.busyCells)
-      })
   }
 
 
@@ -167,6 +154,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * Wait the tiles and the images trees for loading, then start to listen
    */
   private waitImagesAndDraw(): void {
+    let nbTree = 0
     from(this.loadGrass()).pipe(
       tap(() => this.drawIsoGrid()),
       switchMap(() => {
@@ -182,6 +170,9 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       switchMap(() => this.forestControlService.elapsedSeconds$),
       filter(seconds => seconds !== 0 && (seconds === 10 || (seconds % this.timeToGrow === 0)))
     ).subscribe((seconds: number) => {
+      // TODO add the missing trees when browsers throttle the timer due to tab inactivity
+      nbTree++
+      console.log(`We generate the ${nbTree}th tree`)
       this.generateCoordinatesTree()
     })
   }
@@ -318,6 +309,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.treeService.isCoordinatesNotNull(tileTreePosition)) {
       this.saveCoordinatesTree(tileTreePosition.x!, tileTreePosition.y!)
       this.regenerateGridAndTrees()
+      this.localStorageService.saveTreeTiles(this.busyCells)
     } else {
       console.log("No place anymore, we stop the counter :)")
       this.forestControlService.stopTimer()
@@ -360,13 +352,13 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   private drawTreesFromLastSession(): void {
     if (this.loadGridFromLocalStorage) {
 
-      const treesLastSession = this.localStorageService.get("gridBusyTrees") as Array<any>
+      const treesLastSession = this.localStorageService.get(KeyLocalStorage.GridTrees) as Array<any>
       this.busyCells = this.treeService.createBusyCellsFromLastSession(this.trees, treesLastSession)
-      const missingTrees = this.treeService.getNumberMissingTrees(this.timeToGrow, this.localStorageService.get("focusTime"))
+      const missingTrees = this.treeService.getNumberMissingTrees(this.timeToGrow, this.localStorageService.get(KeyLocalStorage.LastSaveDate))
       this.generateAndSaveCoordinatedMissingTrees(missingTrees)
       this.regenerateGridAndTrees()
       this.loadGridFromLocalStorage = false
-      this.localStorageService.saveTimeAndTreeTiles(this.busyCells)
+      this.localStorageService.saveTreeTiles(this.busyCells)
     }
   }
 

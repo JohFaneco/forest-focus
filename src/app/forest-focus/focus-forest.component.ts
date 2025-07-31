@@ -41,13 +41,16 @@ export class FocusForestComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    this.checkSavedSessionTimer()
   }
 
   ngOnDestroy(): void {
   }
 
 
-  // Starts a new focus session and adds a tree to the forest
+  /**
+   * Starts a new focus session
+   */
   startFocus(): void {
     if (this.focusActive) return
 
@@ -66,7 +69,9 @@ export class FocusForestComponent implements OnInit, OnDestroy {
     this.localStorageService.set(KeyLocalStorage.Break, false)
   }
 
-  // Stops focus session and timers
+  /**
+   * Stops the focus session and timers
+   */
   stopFocus(): void {
     this.focusActive = false
     this.forestControlService.stopTimer()
@@ -102,6 +107,18 @@ export class FocusForestComponent implements OnInit, OnDestroy {
     this.forestControlService.deleteForest()
     this.firstFocusActivated = false
     this.stopFocus()
+  }
+
+  /**
+   * Check if the last session had a timer saved and if the user was in focus/break mode
+   */
+  private checkSavedSessionTimer(): void {
+    const wasInBreak = this.localStorageService.get(KeyLocalStorage.Break)
+    const timerLastSession = this.localStorageService.get(KeyLocalStorage.LastTimerValue)
+    this.forestControlService.setElapsedSecondsFromSession(Number(timerLastSession))
+    if (wasInBreak === false) {
+      this.startFocus()
+    }
   }
 
 }

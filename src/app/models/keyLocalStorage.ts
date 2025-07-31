@@ -1,5 +1,6 @@
 export enum KeyLocalStorage {
-  FocusTime = "focusTime",
+  LastSaveDate = "lastSaveDate",
+  LastTimerValue = "lastTimerValue",
   GridTrees = "gridBusyTrees",
   Break = "wasInBreak",
   MapCols = "mapCols",

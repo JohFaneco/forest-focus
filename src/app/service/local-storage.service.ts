@@ -55,8 +55,7 @@ export class LocalStorageService {
   /**
   * Save the trees in the grid and the time every X seconds
   */
-  saveTimeAndTreeTiles(busyCells: Coordinate[]): void {
-    this.set(KeyLocalStorage.FocusTime, Date.now().toString())
+  saveTreeTiles(busyCells: Coordinate[]): void {
     this.saveTreesLocalStorage(busyCells)
   }
 
