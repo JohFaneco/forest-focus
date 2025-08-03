@@ -42,6 +42,7 @@ export class FocusForestComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkSavedSessionTimer()
+    this.listenForestComplete()
   }
 
   ngOnDestroy(): void {
@@ -116,9 +117,24 @@ export class FocusForestComponent implements OnInit, OnDestroy {
     const wasInBreak = this.localStorageService.get(KeyLocalStorage.Break)
     const timerLastSession = this.localStorageService.get(KeyLocalStorage.LastTimerValue)
     this.forestControlService.setElapsedSecondsFromSession(Number(timerLastSession))
+    if (timerLastSession) {
+      this.firstFocusActivated = true
+      this.formattedTimer = this.getFormattedTime(Number(timerLastSession))
+    }
     if (wasInBreak === false) {
       this.startFocus()
     }
+  }
+
+  /**
+   * Listen the observable when the forest is complete
+   */
+  private listenForestComplete(): void {
+    this.forestControlService.isForestComplete$.subscribe((forestComplete: boolean) => {
+      if (forestComplete) {
+        this.focusActive = false
+      }
+    })
   }
 
 }

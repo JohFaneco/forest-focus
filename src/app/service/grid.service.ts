@@ -10,9 +10,6 @@ export class GridService {
 
 
   /**
-  * Generate x, y randomly
- */
-  /**
    * Generate x and y randomly on the cells that are empty
    * @param allCells
    * @param busyCells

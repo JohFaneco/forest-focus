@@ -12,10 +12,12 @@ export class ForestControlService {
   private _isFocusing = new BehaviorSubject<boolean>(false)
   private _isDeleteForest = new Subject<void>()
   private _elapsedSeconds = new BehaviorSubject<number>(0)
+  private _isForestComplete = new BehaviorSubject<boolean>(false)
 
   isFocusing$ = this._isFocusing.asObservable()
   isDeleteForest$ = this._isDeleteForest.asObservable()
   elapsedSeconds$ = this._elapsedSeconds.asObservable()
+  isForestComplete$ = this._isForestComplete.asObservable()
 
   private _timerSub: Subscription | null = null
 
@@ -37,8 +39,6 @@ export class ForestControlService {
 
     this._timerSub = interval(1000).subscribe(() => {
       const delta = this.calculateDelta()
-      console.log("delta s", delta)
-
       this.showLogsTimer()
 
       const current = this._elapsedSeconds.value
@@ -73,6 +73,14 @@ export class ForestControlService {
    */
   setElapsedSecondsFromSession(timerLastSession: number): void {
     this._elapsedSeconds.next(timerLastSession)
+  }
+
+  /**
+   * Emit a boolean if the forest is complete
+   * @param complete
+   */
+  setCompleteForest(complete: boolean): void {
+    this._isForestComplete.next(complete)
   }
 
   /**

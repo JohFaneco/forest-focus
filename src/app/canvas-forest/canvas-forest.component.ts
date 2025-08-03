@@ -17,17 +17,17 @@ import { GridService } from '../service/grid.service';
 export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
-  @ViewChild('forestCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('canvasWrapper', { static: false }) canvasWrapper!: ElementRef<HTMLElement>;
+  @ViewChild('forestCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>
+  @ViewChild('canvasWrapper', { static: false }) canvasWrapper!: ElementRef<HTMLElement>
 
   trees: Array<TreeImage> = []
 
   grassImg!: HTMLImageElement
 
-  canvasWidth!: number;
-  canvasHeight!: number;
+  canvasWidth!: number
+  canvasHeight!: number
 
-  private ctx!: CanvasRenderingContext2D;
+  private ctx!: CanvasRenderingContext2D
 
   private tileWidth: number = 64
   private tileHeight: number = 32
@@ -52,7 +52,9 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   // private timeToGrow: number = 60 * 3
 
   // Mock for test
-  private timeToGrow: number = 60
+  private timeToGrow: number = 15
+
+  private timeFirstTree: number = 10
 
   private loadGridFromLocalStorage: boolean = false
 
@@ -74,10 +76,10 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       this.initSizeCanvas()
     }
 
-    this.cdr.detectChanges();
-    const canvas = this.canvasRef.nativeElement;
+    this.cdr.detectChanges()
+    const canvas = this.canvasRef.nativeElement
     this.initImages()
-    this.ctx = canvas.getContext('2d')!;
+    this.ctx = canvas.getContext('2d')!
     this.waitImagesAndDraw()
   }
 
@@ -107,11 +109,11 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     const wScreen = window.innerWidth
 
     this.canvasWidth = wScreen
-    this.canvasHeight = hScreen - wrapperTop;
+    this.canvasHeight = hScreen - wrapperTop
 
     this.offsetX = wScreen / 2
     this.offsetY = 0
-    let maxTiles: number;
+    let maxTiles: number
 
     // let a space for wide screens, enough to show the images
     if (wScreen > hScreen) {
@@ -154,7 +156,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * Wait the tiles and the images trees for loading, then start to listen
    */
   private waitImagesAndDraw(): void {
-    let nbTree = 0
     from(this.loadGrass()).pipe(
       tap(() => this.drawIsoGrid()),
       switchMap(() => {
@@ -168,12 +169,8 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
         this.drawTreesFromLastSession()
       }),
       switchMap(() => this.forestControlService.elapsedSeconds$),
-      filter(seconds => seconds !== 0 && (seconds === 10 || (seconds % this.timeToGrow === 0)))
     ).subscribe((seconds: number) => {
-      // TODO add the missing trees when browsers throttle the timer due to tab inactivity
-      nbTree++
-      console.log(`We generate the ${nbTree}th tree`)
-      this.generateCoordinatesTree()
+      this.addAdditionalTreesIfMissing(seconds)
     })
   }
 
@@ -272,17 +269,13 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     this.sortArrayByCoordinates()
   }
 
-
-
-
-
   /**
    * Create a promise to load the grass
    * @returns
    */
   private loadGrass(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.grassImg.addEventListener("load", () => resolve(), { once: true });
+      this.grassImg.addEventListener("load", () => resolve(), { once: true })
     })
   }
 
@@ -293,28 +286,12 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   private loadImgTrees(): Promise<void[]> {
     return Promise.all(
       this.trees.map((image) => {
-        if (image.complete) return Promise.resolve();
+        if (image.complete) return Promise.resolve()
         return new Promise<void>((resolve) => {
           image.addEventListener("load", () => resolve(), { once: true })
         })
       })
-    );
-  }
-
-  /**
-   * Start a new counter to place trees in the grid
-   */
-  private generateCoordinatesTree(): void {
-    const tileTreePosition = this.gridService.generateRandomCoordinates(this.allCells, this.busyCells)
-    if (this.treeService.isCoordinatesNotNull(tileTreePosition)) {
-      this.saveCoordinatesTree(tileTreePosition.x!, tileTreePosition.y!)
-      this.regenerateGridAndTrees()
-      this.localStorageService.saveTreeTiles(this.busyCells)
-    } else {
-      console.log("No place anymore, we stop the counter :)")
-      this.forestControlService.stopTimer()
-      this.localStorageService.clearAll()
-    }
+    )
   }
 
   /**
@@ -351,14 +328,11 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    */
   private drawTreesFromLastSession(): void {
     if (this.loadGridFromLocalStorage) {
-
       const treesLastSession = this.localStorageService.get(KeyLocalStorage.GridTrees) as Array<any>
       this.busyCells = this.treeService.createBusyCellsFromLastSession(this.trees, treesLastSession)
       const missingTrees = this.treeService.getNumberMissingTrees(this.timeToGrow, this.localStorageService.get(KeyLocalStorage.LastSaveDate))
-      this.generateAndSaveCoordinatedMissingTrees(missingTrees)
-      this.regenerateGridAndTrees()
+      this.syncForestState(missingTrees)
       this.loadGridFromLocalStorage = false
-      this.localStorageService.saveTreeTiles(this.busyCells)
     }
   }
 
@@ -369,4 +343,40 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     this.drawIsoGrid()
     this.placeAllTrees()
   }
+
+  /**
+   * Add missing trees due to the throttling of the timer
+   * @param seconds
+   */
+  private addAdditionalTreesIfMissing(seconds: number): void {
+    // Determine expected tree count, including the first one after `timeFirstTree`
+    const nbTreeExpected = seconds < this.timeFirstTree ? 0 : Math.floor(seconds / this.timeToGrow) + 1
+    if (nbTreeExpected > this.busyCells.length) {
+      this.syncForestState(nbTreeExpected - this.busyCells.length)
+    }
+  }
+
+  /**
+   * Synchronise the forest when there was a throttle or a reboot sesssion
+   * @param nbTreeExpected
+   */
+  private syncForestState(missingTrees: number): void {
+    this.generateAndSaveCoordinatedMissingTrees(missingTrees)
+    this.regenerateGridAndTrees()
+    this.localStorageService.saveTreeTiles(this.busyCells)
+    this.isFullForestAndStop()
+  }
+
+  /**
+   * Check if the forest is full, then stop the timer and clean the localStorage
+   */
+  private isFullForestAndStop(): void {
+    if (this.busyCells.length === this.allCells.length) {
+      console.log("No place anymore, we stop the counter :)")
+      this.forestControlService.stopTimer()
+      this.localStorageService.clearAll()
+      this.forestControlService.setCompleteForest(true)
+    }
+  }
+
 }
