@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, interval, Observable, Subject, Subscription } from 'rxjs';
+import { LocalStorageService } from './local-storage.service';
+import { KeyLocalStorage } from '../models/keyLocalStorage';
 
 @Injectable({
   providedIn: 'root'
@@ -10,16 +12,21 @@ export class ForestControlService {
   private _isFocusing = new BehaviorSubject<boolean>(false)
   private _isDeleteForest = new Subject<void>()
   private _elapsedSeconds = new BehaviorSubject<number>(0)
+  private _isForestComplete = new BehaviorSubject<boolean>(false)
 
   isFocusing$ = this._isFocusing.asObservable()
   isDeleteForest$ = this._isDeleteForest.asObservable()
   elapsedSeconds$ = this._elapsedSeconds.asObservable()
+  isForestComplete$ = this._isForestComplete.asObservable()
 
   private _timerSub: Subscription | null = null
 
-  constructor() { }
+  private saveIntervalSeconds: number = 5
 
+  private dateNow: number | null = null
+  private pasteDate: number | null = null
 
+  constructor(private localStorageService: LocalStorageService) { }
 
   /**
    * Start the timer where it stopped
@@ -31,8 +38,13 @@ export class ForestControlService {
     this._isFocusing.next(true)
 
     this._timerSub = interval(1000).subscribe(() => {
+      const delta = this.calculateDelta()
+
       const current = this._elapsedSeconds.value
-      this._elapsedSeconds.next(current + 1)
+      const newElapsedValue = delta < 1 ? current + 1 : current + delta
+      this._elapsedSeconds.next(newElapsedValue)
+
+      this.saveTimerDate(newElapsedValue)
     })
   }
 
@@ -52,6 +64,59 @@ export class ForestControlService {
     this.stopTimer()
     this._elapsedSeconds.next(0)
     this._isDeleteForest.next()
+  }
+
+  /**
+   * Emit the timer from the last session
+   * @param timerLastSession
+   */
+  setElapsedSecondsFromSession(timerLastSession: number): void {
+    this._elapsedSeconds.next(timerLastSession)
+  }
+
+  /**
+   * Emit a boolean if the forest is complete
+   * @param complete
+   */
+  setCompleteForest(complete: boolean): void {
+    this._isForestComplete.next(complete)
+  }
+
+  /**
+   * Adjusts for throttled timers when the tab is inactive or in the background
+   * Calculates the number of seconds that passed since the last timer.
+   */
+  private calculateDelta(): number {
+
+    this.dateNow = Date.now()
+    if (!this.pasteDate) {
+      this.pasteDate = this.dateNow
+    }
+
+    const delta = Math.floor((this.dateNow - this.pasteDate) / 1000)
+    this.pasteDate = this.dateNow
+    return delta
+  }
+
+  /**
+   *
+   * @param elapsedTime
+   */
+  private saveTimerDate(elapsedTime: number): void {
+    if (elapsedTime % this.saveIntervalSeconds === 0) {
+      this.localStorageService.set(KeyLocalStorage.LastTimerValue, elapsedTime)
+      this.localStorageService.set(KeyLocalStorage.LastSaveDate, Date.now().toString())
+    }
+  }
+
+  /**
+   * Log the timer
+   */
+  private showLogsTimer(): void {
+    const current = this._elapsedSeconds.value
+    const minutes = Math.floor(current / 60);
+    const seconds = current % 60;
+    console.log(`${minutes}m ${seconds.toString().padStart(2, '0')}s`);
   }
 
 }
