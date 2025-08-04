@@ -39,7 +39,6 @@ export class ForestControlService {
 
     this._timerSub = interval(1000).subscribe(() => {
       const delta = this.calculateDelta()
-      this.showLogsTimer()
 
       const current = this._elapsedSeconds.value
       const newElapsedValue = delta < 1 ? current + 1 : current + delta
@@ -111,7 +110,7 @@ export class ForestControlService {
   }
 
   /**
-   * TODO For the logs, remove before merge
+   * Log the timer
    */
   private showLogsTimer(): void {
     const current = this._elapsedSeconds.value

@@ -49,10 +49,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private gridService: GridService = inject(GridService)
 
-  // private timeToGrow: number = 60 * 3
-
-  // Mock for test
-  private timeToGrow: number = 15
+  private timeToGrow: number = 60 * 2
 
   private timeFirstTree: number = 10
 
