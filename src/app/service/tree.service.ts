@@ -83,6 +83,7 @@ export class TreeService {
       this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 15),
       this.createNewTree(createNewImg, "assets/trees/conifer_custom_autumn.png", 15),
       this.createNewTree(createNewImg, "assets/trees/tree_birch.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/tree_birch_autumn.png", 10),
       // this.createNewTree(createNewImg, "assets/trees/conifer_autumn.png", 5),
       this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
       this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
