@@ -7,13 +7,24 @@
   }
 }
 
-h1 {
+.title {
+  display: flex;
+  flex-direction: row;
   align-self: center;
+  align-items: center;
+  gap: 0.3rem;
   padding-bottom: 50px;
-  color: #32f613;
-  font-size: 2.5rem;
   text-shadow: 1px 1px 1px;
   margin: 2rem 0.5rem;
+  label {
+    font-size: 2.5rem;
+  }
+  .text-title {
+    font-size: 2.5rem;
+    color: transparent;
+    background-image: linear-gradient(45deg, #25ad00, #60ff00, #25ad00);
+    background-clip: text;
+  }
 }
 
 h1,
@@ -122,5 +133,25 @@ li {
     text-align: center;
     color: white;
     font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .title {
+    label {
+      font-size: 2.2rem;
+    }
+    .text-title {
+      font-size: 2.2rem;
+    }
+  }
+  .container-actions {
+    gap: 1rem;
+  }
+}
+
+@media (max-height: 750px) {
+  .title {
+    padding-bottom: 25px;
   }
 }

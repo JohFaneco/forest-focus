@@ -1,5 +1,9 @@
 <div class="container">
-  <h1>🌲 Focus Forest 🌲</h1>
+  <div class="title">
+    <label>🌲</label>
+    <h1 class="text-title">Focus Forest</h1>
+    <label>🌲</label>
+  </div>
 
   <div class="container-actions">
 
@@ -32,10 +36,10 @@
 
   <app-canvas-forest></app-canvas-forest>
 
-   <!-- Timer -->
+  <!-- Timer -->
   <div class="wrappedTimer">
     @if (firstFocusActivated) {
-      <p class="timer">⏱️ Time focused: {{ formattedTimer }}</p>
+    <p class="timer">⏱️ Time focused: {{ formattedTimer }}</p>
     }
   </div>
   <!-- Timer -->
