@@ -6,6 +6,8 @@ import { CanvasForestComponent } from "../canvas-forest/canvas-forest.component"
 import { ForestControlService } from '../service/forest-control.service'
 import { LocalStorageService } from '../service/local-storage.service'
 import { KeyLocalStorage } from '../models/keyLocalStorage'
+import { TreeService } from '../service/tree.service'
+import { SeasonEnum } from '../models/seasonEnum'
 
 
 @Component({
@@ -18,8 +20,8 @@ import { KeyLocalStorage } from '../models/keyLocalStorage'
 export class FocusForestComponent implements OnInit, OnDestroy {
 
   listActivated: boolean = false
-  forestType = 'autumn'
-  forestTypes = ['autumn']
+  forestType = SeasonEnum.Autumn as string
+  forestTypes = [SeasonEnum.Autumn, SeasonEnum.Summer]
   nextId = 1
 
   focusActive: boolean = false
@@ -28,6 +30,7 @@ export class FocusForestComponent implements OnInit, OnDestroy {
 
   private forestControlService: ForestControlService = inject(ForestControlService)
   private localStorageService: LocalStorageService = inject(LocalStorageService)
+  private treeService: TreeService = inject(TreeService)
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent): void {
@@ -42,6 +45,7 @@ export class FocusForestComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkSavedSessionTimer()
+    this.loadSeasonSession()
     this.listenForestComplete()
   }
 
@@ -83,7 +87,20 @@ export class FocusForestComponent implements OnInit, OnDestroy {
    * Hide the list of the forest Type
    */
   showHideList() {
-    this.listActivated = !this.listActivated
+    // Changement only accepted when the forest has not been started
+    if (!this.firstFocusActivated) {
+      this.listActivated = !this.listActivated
+    }
+
+  }
+
+  /**
+   * Change the season forest
+   * @param type
+   */
+  changeSeasonType(type: string): void {
+    this.forestType = type
+    this.treeService.setSeasonTrees(type)
   }
 
 
@@ -123,6 +140,17 @@ export class FocusForestComponent implements OnInit, OnDestroy {
     }
     if (wasInBreak === false) {
       this.startFocus()
+    }
+  }
+
+  /**
+   * Load the season of the last session if presents
+   */
+  private loadSeasonSession(): void {
+    const season = this.localStorageService.get(KeyLocalStorage.Season) as string
+    if (season) {
+      this.forestType = season
+      this.changeSeasonType(season)
     }
   }
 

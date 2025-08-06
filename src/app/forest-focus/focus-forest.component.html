@@ -10,7 +10,7 @@
     <div>
       <label>Choose your forest type :</label>
     </div>
-    <div class="dropdown">
+    <div class="dropdown" [class]="{'not-allowed': firstFocusActivated, 'allowed': !firstFocusActivated}" [title]="firstFocusActivated ? 'Not allowed when the forest is growing' : 'Seasons will change the trees'">
 
       <div class="select-box" (click)="showHideList()">
         @if (!!forestType) {
@@ -21,7 +21,7 @@
       @if (listActivated) {
       <ul class="list-types">
         @for (type of forestTypes; track type) {
-        <li (click)="forestType = type" [class.selected]="forestType === type">
+        <li (click)="changeSeasonType(type)" [class.selected]="forestType === type">
           {{type}}
         </li>
         }
