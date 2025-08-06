@@ -10,7 +10,7 @@
     <div>
       <label>Choose your forest type :</label>
     </div>
-    <div class="dropdown" [class]="{'not-allowed': firstFocusActivated, 'allowed': !firstFocusActivated}" [title]="firstFocusActivated ? 'Not allowed when the forest is growing' : 'Seasons will change the trees'">
+    <div class="dropdown" [class]="{'not-allowed': firstFocusActivated, 'allowed': !firstFocusActivated}" [title]="firstFocusActivated ? 'Not allowed when the forest is growing' : 'A season will change the trees'">
 
       <div class="select-box" (click)="showHideList()">
         @if (!!forestType) {
