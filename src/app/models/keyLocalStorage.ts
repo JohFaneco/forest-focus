@@ -9,5 +9,5 @@ export enum KeyLocalStorage {
   OffsetX = "offsetX",
   OffsetY = "offsetY",
   CanvasWidth = "canvasWidth",
-  CanvasHeight = "canvasHeight",
+  CanvasHeight = "canvasHeight"
 }

@@ -70,8 +70,6 @@ export class FocusForestComponent implements OnInit, OnDestroy {
     this.forestControlService.elapsedSeconds$.subscribe((seconds: number) => {
       this.formattedTimer = this.getFormattedTime(seconds)
     })
-
-    this.localStorageService.set(KeyLocalStorage.Break, false)
   }
 
   /**
@@ -138,6 +136,7 @@ export class FocusForestComponent implements OnInit, OnDestroy {
       this.firstFocusActivated = true
       this.formattedTimer = this.getFormattedTime(Number(timerLastSession))
     }
+
     if (wasInBreak === false) {
       this.startFocus()
     }
