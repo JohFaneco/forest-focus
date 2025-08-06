@@ -21,8 +21,6 @@ export class ForestControlService {
 
   private _timerSub: Subscription | null = null
 
-  private saveIntervalSeconds: number = 5
-
   private dateNow: number | null = null
   private pasteDate: number | null = null
 
@@ -93,20 +91,26 @@ export class ForestControlService {
       this.pasteDate = this.dateNow
     }
 
+    const wasInBreak = this.localStorageService.get(KeyLocalStorage.Break)
+
+    // The delta is 0 if the user was in a break during the last session
+    if (wasInBreak === true) {
+      this.localStorageService.set(KeyLocalStorage.Break, false)
+      return 0
+    }
+
     const delta = Math.floor((this.dateNow - this.pasteDate) / 1000)
     this.pasteDate = this.dateNow
     return delta
   }
 
   /**
-   *
+   * Save the timer in the localStorage
    * @param elapsedTime
    */
   private saveTimerDate(elapsedTime: number): void {
-    if (elapsedTime % this.saveIntervalSeconds === 0) {
-      this.localStorageService.set(KeyLocalStorage.LastTimerValue, elapsedTime)
-      this.localStorageService.set(KeyLocalStorage.LastSaveDate, Date.now().toString())
-    }
+    this.localStorageService.set(KeyLocalStorage.LastTimerValue, elapsedTime)
+    this.localStorageService.set(KeyLocalStorage.LastSaveDate, Date.now().toString())
   }
 
   /**

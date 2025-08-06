@@ -328,7 +328,12 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.loadGridFromLocalStorage) {
       const treesLastSession = this.localStorageService.get(KeyLocalStorage.GridTrees) as Array<any>
       this.busyCells = this.treeService.createBusyCellsFromLastSession(this.trees, treesLastSession)
-      const missingTrees = this.treeService.getNumberMissingTrees(this.timeToGrow, this.localStorageService.get(KeyLocalStorage.LastSaveDate))
+      const wasInBreak = this.localStorageService.get(KeyLocalStorage.Break)
+      let missingTrees = 0
+      if (wasInBreak === false) {
+        missingTrees = this.treeService.getNumberMissingTrees(this.timeToGrow, this.localStorageService.get(KeyLocalStorage.LastSaveDate))
+      }
+      console.log(missingTrees)
       this.syncForestState(missingTrees)
       this.loadGridFromLocalStorage = false
     }
