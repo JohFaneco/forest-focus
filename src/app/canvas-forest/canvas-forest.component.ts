@@ -50,7 +50,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   private gridService: GridService = inject(GridService)
 
   private timeToGrow: number = 60 * 2
-
   private timeFirstTree: number = 10
 
   private loadGridFromLocalStorage: boolean = false
@@ -135,7 +134,9 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    */
   private initImages(): void {
     this.grassImg = this.createNewImg("assets/tiles/grass3.png")
-    this.trees = this.treeService.createTrees(this.createNewImg)
+    this.treeService.seasonTrees$.subscribe((season: string | null) => {
+      this.trees = this.treeService.createTrees(this.createNewImg)
+    })
   }
 
   /**

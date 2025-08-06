@@ -1,13 +1,21 @@
 import { Injectable } from '@angular/core';
 import { TreeImage } from '../models/treeImage';
 import { Coordinate } from '../models/coordinate';
+import { BehaviorSubject } from 'rxjs';
+import { SeasonEnum } from '../models/seasonEnum';
+import { LocalStorageService } from './local-storage.service';
+import { KeyLocalStorage } from '../models/keyLocalStorage';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TreeService {
 
-  constructor() { }
+
+  private _seasonTrees = new BehaviorSubject<string | null>(null)
+  seasonTrees$ = this._seasonTrees.asObservable()
+
+  constructor(private localStorageService: LocalStorageService) { }
 
   /**
   * Get the number of trees that are missing from the last session
@@ -75,19 +83,13 @@ export class TreeService {
    * @param createNewImg function for creating a new Image
    */
   createTrees(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
-    return [
-      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_small.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall_autumn.png", 10),
-      // this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall.png", 10),
-      // this.createNewTree(createNewImg, "assets/trees/conifer.png", 5),
-      this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 15),
-      this.createNewTree(createNewImg, "assets/trees/conifer_custom_autumn.png", 15),
-      this.createNewTree(createNewImg, "assets/trees/tree_birch.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/tree_birch_autumn.png", 10),
-      // this.createNewTree(createNewImg, "assets/trees/conifer_autumn.png", 5),
-      this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
-      this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
-    ]
+    switch (this._seasonTrees.value) {
+      case SeasonEnum.Summer:
+        return this.getListTreeSummer(createNewImg)
+      case SeasonEnum.Autumn:
+        return this.getListTreeAutumn(createNewImg)
+    }
+    return this.getListTreeAutumn(createNewImg)
   }
 
   /**
@@ -101,6 +103,14 @@ export class TreeService {
     let coordinates = new Coordinate(tileX, tileY)
     coordinates.treeImg = treeToPlace
     return coordinates
+  }
+
+  /**
+   * Change the season of the forest
+   */
+  setSeasonTrees(season: string): void {
+    this._seasonTrees.next(season)
+    this.localStorageService.set(KeyLocalStorage.Season, season)
   }
 
   /**
@@ -122,5 +132,43 @@ export class TreeService {
     imgObj.weight = weight
     imgObj.anchorYOffset = anchorYOffset
     return imgObj
+  }
+
+  /**
+   * Get the list of the autumn trees
+   */
+  private getListTreeAutumn(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
+    return [
+      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_small.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 15),
+
+      this.createNewTree(createNewImg, "assets/trees/birch_autumn.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/conifer_custom_autumn.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/tree_birch_custom_autumn.png", 15),
+
+      this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
+      this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
+    ]
+  }
+
+  /**
+   * Get the list of the summer trees
+   */
+  private getListTreeSummer(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
+    return [
+      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_small.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall.png", 5),
+
+      this.createNewTree(createNewImg, "assets/trees/conifer.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 15),
+
+      this.createNewTree(createNewImg, "assets/trees/green_conifer.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/birch_summer.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/tree_birch_custom.png", 15),
+
+      this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
+      this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
+    ]
   }
 }
