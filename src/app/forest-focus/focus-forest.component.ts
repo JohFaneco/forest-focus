@@ -84,12 +84,11 @@ export class FocusForestComponent implements OnInit, OnDestroy {
   /**
    * Hide the list of the forest Type
    */
-  showHideList() {
+  showHideList(hiddenForced?: boolean) {
     // Changement only accepted when the forest has not been started
     if (!this.firstFocusActivated) {
-      this.listActivated = !this.listActivated
+      this.listActivated = hiddenForced ? false : !this.listActivated
     }
-
   }
 
   /**
@@ -99,6 +98,7 @@ export class FocusForestComponent implements OnInit, OnDestroy {
   changeSeasonType(type: string): void {
     this.forestType = type
     this.treeService.setSeasonTrees(type)
+    this.showHideList(true)
   }
 
 
@@ -147,10 +147,8 @@ export class FocusForestComponent implements OnInit, OnDestroy {
    */
   private loadSeasonSession(): void {
     const season = this.localStorageService.get(KeyLocalStorage.Season) as string
-    if (season) {
-      this.forestType = season
-      this.changeSeasonType(season)
-    }
+    this.forestType = season ? season : SeasonEnum.Autumn
+    this.changeSeasonType(this.forestType)
   }
 
   /**

@@ -96,6 +96,7 @@ export class ForestControlService {
     // The delta is 0 if the user was in a break during the last session
     if (wasInBreak === true) {
       this.localStorageService.set(KeyLocalStorage.Break, false)
+      this.pasteDate = this.dateNow
       return 0
     }
 

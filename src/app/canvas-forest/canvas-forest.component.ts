@@ -7,6 +7,7 @@ import { LocalStorageService } from '../service/local-storage.service';
 import { KeyLocalStorage } from '../models/keyLocalStorage';
 import { TreeService } from '../service/tree.service';
 import { GridService } from '../service/grid.service';
+import { SeasonEnum } from '../models/seasonEnum';
 
 @Component({
   selector: 'app-canvas-forest',
@@ -22,7 +23,10 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   trees: Array<TreeImage> = []
 
-  grassImg!: HTMLImageElement
+  season: string | null = null
+
+  grassSummerImg!: HTMLImageElement
+  grassAutumnImg!: HTMLImageElement
 
   canvasWidth!: number
   canvasHeight!: number
@@ -66,7 +70,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
 
     // get from the localStorage or init a new grid configuration
-    if (this.localStorageService.get("mapCols")) {
+    if (this.localStorageService.get(KeyLocalStorage.MapCols)) {
       this.initSiveCanvasFromStorage()
     } else {
       this.initSizeCanvas()
@@ -74,8 +78,8 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.cdr.detectChanges()
     const canvas = this.canvasRef.nativeElement
-    this.initImages()
     this.ctx = canvas.getContext('2d')!
+    this.initImages()
     this.waitImagesAndDraw()
   }
 
@@ -85,12 +89,12 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * Init the configuration of the grid from the localStorage
    */
   private initSiveCanvasFromStorage(): void {
-    this.mapCols = this.localStorageService.get("mapCols")!
-    this.mapRows = this.localStorageService.get("mapRows")!
-    this.offsetX = this.localStorageService.get("offsetX")!
-    this.offsetY = this.localStorageService.get("offsetY")!
-    this.canvasWidth = this.localStorageService.get("canvasWidth")!
-    this.canvasHeight = this.localStorageService.get("canvasHeight")!
+    this.mapCols = this.localStorageService.get(KeyLocalStorage.MapCols)!
+    this.mapRows = this.localStorageService.get(KeyLocalStorage.MapRows)!
+    this.offsetX = this.localStorageService.get(KeyLocalStorage.OffsetX)!
+    this.offsetY = this.localStorageService.get(KeyLocalStorage.OffsetY)!
+    this.canvasWidth = this.localStorageService.get(KeyLocalStorage.CanvasWidth)!
+    this.canvasHeight = this.localStorageService.get(KeyLocalStorage.CanvasHeight)!
     this.loadGridFromLocalStorage = true
   }
 
@@ -133,9 +137,12 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * Init the images for the tiles and the trees
    */
   private initImages(): void {
-    this.grassImg = this.createNewImg("assets/tiles/grass3.png")
+    this.grassSummerImg = this.createNewImg("assets/tiles/grass2.png")
+    this.grassAutumnImg = this.createNewImg("assets/tiles/autumn.png")
     this.treeService.seasonTrees$.subscribe((season: string | null) => {
       this.trees = this.treeService.createTrees(this.createNewImg)
+      this.season = season
+      this.drawIsoGrid()
     })
   }
 
@@ -154,7 +161,8 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * Wait the tiles and the images trees for loading, then start to listen
    */
   private waitImagesAndDraw(): void {
-    from(this.loadGrass()).pipe(
+    from(this.loadGrassSummer()).pipe(
+      switchMap(() => from(this.loadGrassAutumn())),
       tap(() => this.drawIsoGrid()),
       switchMap(() => {
         if (this.trees && this.trees.length > 0) {
@@ -204,8 +212,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     })
   }
 
-
-
   /**
    * Create an isometric tile based on x and y
    * @param x
@@ -253,8 +259,22 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * @param yScreen
    */
   private placeGrass(xScreen: number, yScreen: number): void {
-    const grassImgOffsetY = this.grassImg.height - this.tileHeight
-    this.ctx.drawImage(this.grassImg, xScreen - this.tileWidth / 2, yScreen - grassImgOffsetY)
+    let groundImgOffsetY = 0
+    let htmlImageElement: HTMLImageElement | null = null
+
+    switch (this.season) {
+      case SeasonEnum.Autumn:
+        htmlImageElement = this.grassAutumnImg
+        break;
+      case SeasonEnum.Summer:
+        htmlImageElement = this.grassSummerImg
+        break;
+      default:
+        htmlImageElement = this.grassSummerImg
+        break;
+    }
+    groundImgOffsetY = htmlImageElement.height - this.tileHeight
+    this.ctx.drawImage(htmlImageElement, xScreen - this.tileWidth / 2, yScreen - groundImgOffsetY)
   }
 
   /**
@@ -268,12 +288,22 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Create a promise to load the grass
+   * Create a promise to load the grass summer
    * @returns
    */
-  private loadGrass(): Promise<void> {
+  private loadGrassSummer(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.grassImg.addEventListener("load", () => resolve(), { once: true })
+      this.grassSummerImg.addEventListener("load", () => resolve(), { once: true })
+    })
+  }
+
+  /**
+   * Create a promise to load the grass autumn
+   * @returns
+   */
+  private loadGrassAutumn(): Promise<void> {
+    return new Promise((resolve) => {
+      this.grassAutumnImg.addEventListener("load", () => resolve(), { once: true })
     })
   }
 
@@ -317,7 +347,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       this.drawIsoGrid()
       this.busyCells.length = 0
       this.busyCells = []
-      this.localStorageService.clearAll()
+      this.localStorageService.clearForestProperties()
     })
   }
 
@@ -333,7 +363,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       if (wasInBreak === false) {
         missingTrees = this.treeService.getNumberMissingTrees(this.timeToGrow, this.localStorageService.get(KeyLocalStorage.LastSaveDate))
       }
-      console.log(missingTrees)
       this.syncForestState(missingTrees)
       this.loadGridFromLocalStorage = false
     }
