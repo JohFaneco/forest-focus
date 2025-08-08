@@ -1,13 +1,13 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { TreeImage } from '../models/treeImage';
 import { Coordinate } from '../models/coordinate';
-import { filter, from, of, switchMap, tap } from 'rxjs';
+import { from, of, switchMap, tap } from 'rxjs';
 import { ForestControlService } from '../service/forest-control.service';
 import { LocalStorageService } from '../service/local-storage.service';
 import { KeyLocalStorage } from '../models/keyLocalStorage';
 import { TreeService } from '../service/tree.service';
 import { GridService } from '../service/grid.service';
-import { SeasonEnum } from '../models/seasonEnum';
+import { TileImage } from '../models/tileImage';
 
 @Component({
   selector: 'app-canvas-forest',
@@ -25,9 +25,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   season: string | null = null
 
-  grassSummerImg!: HTMLImageElement
-  grassAutumnImg!: HTMLImageElement
-
   canvasWidth!: number
   canvasHeight!: number
 
@@ -41,6 +38,10 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private offsetX!: number
   private offsetY!: number
+
+  private soilSeasonImages: Array<HTMLImageElement> = []
+
+  private gridSoilImages: Array<TileImage> = []
 
   private allCells: Array<Coordinate> = []
   private busyCells: Array<Coordinate> = []
@@ -133,25 +134,17 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /**
    * Init the images for the tiles and the trees
+   * Change the soil and the trees according to the selected season
    */
   private initImages(): void {
-    this.grassSummerImg = this.createNewImg("assets/tiles/grass2.png")
-    this.grassAutumnImg = this.createNewImg("assets/tiles/autumn.png")
-    this.listenSeasonChanged()
-  }
-
-  /**
-   * Listener on a season when it changes
-   * Have to wait the the grass images if they've been loaded because we have to wait them to draw the grid
-   */
-  private listenSeasonChanged(): void {
     this.treeService.seasonTrees$.pipe(
       tap((season: string | null) => {
         this.trees = this.treeService.createTrees(this.createNewImg)
         this.season = season
+        this.setSoilBySeason(season)
+        this.resetImgCells()
       }),
-      switchMap(() => from(this.loadGrassSummer())),
-      switchMap(() => from(this.loadGrassAutumn())),
+      switchMap(() => from(this.loadImgSoils())),
     ).subscribe(() => {
       this.drawIsoGrid()
     })
@@ -172,8 +165,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * Wait the tiles and the images trees for loading, then start to listen
    */
   private waitImagesAndDraw(): void {
-    from(this.loadGrassSummer()).pipe(
-      switchMap(() => from(this.loadGrassAutumn())),
+    from(this.loadImgSoils()).pipe(
       tap(() => this.drawIsoGrid()),
       switchMap(() => {
         if (this.trees && this.trees.length > 0) {
@@ -270,20 +262,14 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * @param yScreen
    */
   private placeGrass(xScreen: number, yScreen: number): void {
-    let groundImgOffsetY = 0
-    let htmlImageElement: HTMLImageElement | null = null
 
-    switch (this.season) {
-      case SeasonEnum.Autumn:
-        htmlImageElement = this.grassAutumnImg
-        break;
-      case SeasonEnum.Summer:
-        htmlImageElement = this.grassSummerImg
-        break;
-      default:
-        htmlImageElement = this.grassSummerImg
-        break;
-    }
+    let htmlImageElement: HTMLImageElement = this.gridService.getHtmlImageElemenSoil(xScreen, yScreen, this.gridSoilImages, this.soilSeasonImages,
+      (imgCoordinateToSave: TileImage) => {
+        this.gridSoilImages.push(imgCoordinateToSave)
+      }
+    )
+
+    let groundImgOffsetY = 0
     groundImgOffsetY = htmlImageElement.height - this.tileHeight
     this.ctx.drawImage(htmlImageElement, xScreen - this.tileWidth / 2, yScreen - groundImgOffsetY)
   }
@@ -299,31 +285,21 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Create a promise to load the grass summer
-   * @returns
+   * Create a promise to wait the loading of all the soils for one season
    */
-  private loadGrassSummer(): Promise<void> {
-    if (this.grassSummerImg.complete) return Promise.resolve();
-
-    return new Promise((resolve, reject) => {
-      this.grassSummerImg.addEventListener("load", () => resolve(), { once: true })
-    })
+  private loadImgSoils(): Promise<void[]> {
+    return Promise.all(
+      this.soilSeasonImages.map((image) => {
+        if (image.complete) return Promise.resolve()
+        return new Promise<void>((resolve) => {
+          image.addEventListener("load", () => resolve(), { once: true })
+        })
+      })
+    )
   }
 
   /**
-   * Create a promise to load the grass autumn
-   * @returns
-   */
-  private loadGrassAutumn(): Promise<void> {
-    if (this.grassAutumnImg.complete) return Promise.resolve();
-    return new Promise((resolve) => {
-      this.grassAutumnImg.addEventListener("load", () => resolve(), { once: true })
-    })
-  }
-
-  /**
-   * Create a promise to wait loading all the trees
-   * @returns
+   * Create a promise to wait the loading of all the trees
    */
   private loadImgTrees(): Promise<void[]> {
     return Promise.all(
@@ -334,6 +310,14 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
         })
       })
     )
+  }
+
+  /**
+   * Change the tiles soils by season
+   * @param season
+   */
+  private setSoilBySeason(season: string | null): void {
+    this.soilSeasonImages = this.gridService.getSoilBySeason(season, this.createNewImg)
   }
 
   /**
@@ -423,6 +407,14 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
       this.localStorageService.clearAll()
       this.forestControlService.setCompleteForest(true)
     }
+  }
+
+  /**
+   * Reset the reference images of the grid
+   */
+  private resetImgCells(): void {
+    this.gridSoilImages.length = 0
+    this.gridSoilImages = []
   }
 
 }
