@@ -83,13 +83,19 @@ export class TreeService {
    * @param createNewImg function for creating a new Image
    */
   createTrees(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
+    let listTree: TreeImage[] = []
     switch (this._seasonTrees.value) {
       case SeasonEnum.Summer:
-        return this.getListTreeSummer(createNewImg)
+        listTree = this.getListTreeSummer(createNewImg)
+        break
       case SeasonEnum.Autumn:
-        return this.getListTreeAutumn(createNewImg)
+        listTree = this.getListTreeAutumn(createNewImg)
+        break
+      default:
+        listTree = this.getListTreeSummer(createNewImg)
+        break
     }
-    return this.getListTreeAutumn(createNewImg)
+    return listTree
   }
 
   /**
