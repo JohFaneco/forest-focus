@@ -36,8 +36,21 @@ export class LocalStorageService {
     localStorage.removeItem(key)
   }
 
+  /**
+   * Clear the entire localstorage
+   */
   clearAll(): void {
     localStorage.clear()
+  }
+
+  /**
+   * Delete the forest and its properties
+   */
+  clearForestProperties(): void {
+    localStorage.removeItem(KeyLocalStorage.LastSaveDate)
+    localStorage.removeItem(KeyLocalStorage.LastTimerValue)
+    localStorage.removeItem(KeyLocalStorage.GridTrees)
+    localStorage.removeItem(KeyLocalStorage.Break)
   }
 
   /**
