@@ -83,8 +83,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     this.waitImagesAndDraw()
   }
 
-
-
   /**
    * Init the configuration of the grid from the localStorage
    */
@@ -139,9 +137,22 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
   private initImages(): void {
     this.grassSummerImg = this.createNewImg("assets/tiles/grass2.png")
     this.grassAutumnImg = this.createNewImg("assets/tiles/autumn.png")
-    this.treeService.seasonTrees$.subscribe((season: string | null) => {
-      this.trees = this.treeService.createTrees(this.createNewImg)
-      this.season = season
+    this.listenSeasonChanged()
+  }
+
+  /**
+   * Listener on a season when it changes
+   * Have to wait the the grass images if they've been loaded because we have to wait them to draw the grid
+   */
+  private listenSeasonChanged(): void {
+    this.treeService.seasonTrees$.pipe(
+      tap((season: string | null) => {
+        this.trees = this.treeService.createTrees(this.createNewImg)
+        this.season = season
+      }),
+      switchMap(() => from(this.loadGrassSummer())),
+      switchMap(() => from(this.loadGrassAutumn())),
+    ).subscribe(() => {
       this.drawIsoGrid()
     })
   }
@@ -292,6 +303,8 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * @returns
    */
   private loadGrassSummer(): Promise<void> {
+    if (this.grassSummerImg.complete) return Promise.resolve();
+
     return new Promise((resolve, reject) => {
       this.grassSummerImg.addEventListener("load", () => resolve(), { once: true })
     })
@@ -302,6 +315,7 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
    * @returns
    */
   private loadGrassAutumn(): Promise<void> {
+    if (this.grassAutumnImg.complete) return Promise.resolve();
     return new Promise((resolve) => {
       this.grassAutumnImg.addEventListener("load", () => resolve(), { once: true })
     })
