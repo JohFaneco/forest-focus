@@ -54,8 +54,9 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private gridService: GridService = inject(GridService)
 
-  private timeToGrow: number = 60 * 2
-  private timeFirstTree: number = 10
+  // TODO change before MERGING, even change for environment variables
+  private timeToGrow: number = 1
+  private timeFirstTree: number = 0.5
 
   private loadGridFromLocalStorage: boolean = false
 

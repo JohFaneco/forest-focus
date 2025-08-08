@@ -91,6 +91,9 @@ export class TreeService {
       case SeasonEnum.Autumn:
         listTree = this.getListTreeAutumn(createNewImg)
         break
+      case SeasonEnum.Winter:
+        listTree = this.getListTreeWinter(createNewImg)
+        break
       default:
         listTree = this.getListTreeSummer(createNewImg)
         break
@@ -129,6 +132,7 @@ export class TreeService {
 
   /**
    * Create a new image Tree
+   * @param createNewImg callback function
    * @param srcImage
    * @param weight
    * @param anchorYOffset
@@ -142,17 +146,16 @@ export class TreeService {
 
   /**
    * Get the list of the autumn trees
+   * @param createNewImg callback function
    */
   private getListTreeAutumn(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
     return [
       this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_small.png", 10),
       this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall.png", 10),
       this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 15),
-
       this.createNewTree(createNewImg, "assets/trees/birch_autumn.png", 10),
       this.createNewTree(createNewImg, "assets/trees/conifer_custom_autumn.png", 10),
       this.createNewTree(createNewImg, "assets/trees/tree_birch_custom_autumn.png", 15),
-
       this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
       this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
     ]
@@ -160,6 +163,7 @@ export class TreeService {
 
   /**
    * Get the list of the summer trees
+   * @param createNewImg callback function
    */
   private getListTreeSummer(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
     return [
@@ -175,6 +179,20 @@ export class TreeService {
 
       this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
       this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
+    ]
+  }
+
+  /**
+   * Get the list of the winter trees
+   * @param createNewImg callback function
+   */
+  private getListTreeWinter(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
+    return [
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_adult_conifer_snow.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_baby_conifer_snow.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree_2.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree.png", 5)
     ]
   }
 }
