@@ -189,10 +189,11 @@ export class TreeService {
   private getListTreeWinter(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
     return [
       this.createNewTree(createNewImg, "assets/trees/winter/winter_adult_conifer_snow.png", 15),
-      this.createNewTree(createNewImg, "assets/trees/winter/winter_baby_conifer_snow.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree_2.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree.png", 5)
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_baby_conifer_snow.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree_2.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_1.png", 6),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_2.png", 6)
     ]
   }
 }
