@@ -150,12 +150,15 @@ export class TreeService {
    */
   private getListTreeAutumn(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
     return [
-      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_small.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 15),
-      this.createNewTree(createNewImg, "assets/trees/birch_autumn.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/conifer_custom_autumn.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/tree_birch_custom_autumn.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/autumn/conifer_custom_autumn.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_small.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall.png", 8),
+
+      this.createNewTree(createNewImg, "assets/trees/autumn/birch_autumn.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/autumn/birch_autumn_2", 5),
+      this.createNewTree(createNewImg, "assets/trees/autumn/japanese_maple_autumn.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/autumn/japanese_maple_autumn_2.png", 5),
       this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
       this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
     ]
