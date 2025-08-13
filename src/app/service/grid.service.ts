@@ -58,6 +58,9 @@ export class GridService {
       case SeasonEnum.Summer:
         listTilesSoil = this.getListSoilSummer(createNewImg)
         break
+      case SeasonEnum.Winter:
+        listTilesSoil = this.getListSoilWinter(createNewImg)
+        break
       default:
         listTilesSoil = this.getListSoilAutumn(createNewImg)
         break
@@ -143,6 +146,18 @@ export class GridService {
       createNewImg("assets/tiles/summer/grass1.png"),
       createNewImg("assets/tiles/summer/grass2.png"),
       createNewImg("assets/tiles/summer/grass3.png"),
+    ]
+  }
+
+  /**
+   * Get the list of the winter tiles
+   * @param createNewImg
+   */
+  private getListSoilWinter(createNewImg: (src: string) => HTMLImageElement): HTMLImageElement[] {
+    return [
+      createNewImg("assets/tiles/winter/winter1.png"),
+      createNewImg("assets/tiles/winter/winter2.png"),
+      createNewImg("assets/tiles/winter/winter3.png"),
     ]
   }
 

@@ -91,6 +91,9 @@ export class TreeService {
       case SeasonEnum.Autumn:
         listTree = this.getListTreeAutumn(createNewImg)
         break
+      case SeasonEnum.Winter:
+        listTree = this.getListTreeWinter(createNewImg)
+        break
       default:
         listTree = this.getListTreeSummer(createNewImg)
         break
@@ -129,6 +132,7 @@ export class TreeService {
 
   /**
    * Create a new image Tree
+   * @param createNewImg callback function
    * @param srcImage
    * @param weight
    * @param anchorYOffset
@@ -142,39 +146,58 @@ export class TreeService {
 
   /**
    * Get the list of the autumn trees
+   * @param createNewImg callback function
    */
   private getListTreeAutumn(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
     return [
-      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_small.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/conifer_custom.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/autumn/conifer_custom_autumn.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/evergreen_conifer_small.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/evergreen_conifer_tall.png", 8),
 
-      this.createNewTree(createNewImg, "assets/trees/birch_autumn.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/conifer_custom_autumn.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/tree_birch_custom_autumn.png", 15),
-
-      this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
-      this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
+      this.createNewTree(createNewImg, "assets/trees/autumn/birch_autumn.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/autumn/birch_autumn_2.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/autumn/poplar_autumn.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/autumn/japanese_maple_autumn.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/autumn/japanese_maple_autumn_2.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/dead_conifer.png", 2),
     ]
   }
 
   /**
    * Get the list of the summer trees
+   * @param createNewImg callback function
    */
   private getListTreeSummer(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
     return [
-      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_small.png", 5),
-      this.createNewTree(createNewImg, "assets/trees/evergreen_conifer_tall.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/evergreen_conifer_small.png", 5),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/evergreen_conifer_tall.png", 5),
 
-      this.createNewTree(createNewImg, "assets/trees/conifer.png", 10),
-      this.createNewTree(createNewImg, "assets/trees/conifer_custom.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/summer/conifer.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/conifer_custom.png", 15),
 
-      this.createNewTree(createNewImg, "assets/trees/green_conifer.png", 15),
-      this.createNewTree(createNewImg, "assets/trees/birch_summer.png", 15),
-      this.createNewTree(createNewImg, "assets/trees/tree_birch_custom.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/no_seaons/green_conifer.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/summer/birch_summer.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/summer/tree_birch_custom.png", 15),
 
-      this.createNewTree(createNewImg, "assets/trees/dead_conifer.png", 2),
-      this.createNewTree(createNewImg, "assets/trees/dead_conifer_tall.png", 2),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/dead_conifer.png", 2),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/dead_conifer_tall.png", 2),
+    ]
+  }
+
+  /**
+   * Get the list of the winter trees
+   * @param createNewImg callback function
+   */
+  private getListTreeWinter(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
+    return [
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_adult_conifer_snow.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_baby_conifer_snow.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree_2.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_bush.png", 6),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_1.png", 3),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_2.png", 3)
     ]
   }
 }
