@@ -1,5 +1,6 @@
 export enum SeasonEnum {
   Summer = "summer",
   Autumn = "autumn",
-  Winter = "winter"
+  Winter = "winter",
+  Spring = "spring"
 }

@@ -21,7 +21,7 @@ export class FocusForestComponent implements OnInit, OnDestroy {
 
   listActivated: boolean = false
   forestType = SeasonEnum.Autumn as string
-  forestTypes = [SeasonEnum.Autumn, SeasonEnum.Summer, SeasonEnum.Winter]
+  forestTypes = [SeasonEnum.Autumn, SeasonEnum.Summer, SeasonEnum.Winter, SeasonEnum.Spring]
   nextId = 1
 
   focusActive: boolean = false
