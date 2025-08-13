@@ -196,8 +196,8 @@ export class TreeService {
       this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree_2.png", 8),
       this.createNewTree(createNewImg, "assets/trees/winter/winter_dead_tree.png", 8),
       this.createNewTree(createNewImg, "assets/trees/winter/winter_bush.png", 6),
-      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_1.png", 6),
-      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_2.png", 6)
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_1.png", 3),
+      this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_2.png", 3)
     ]
   }
 }
