@@ -176,7 +176,7 @@ export class TreeService {
       this.createNewTree(createNewImg, "assets/trees/summer/conifer.png", 10),
       this.createNewTree(createNewImg, "assets/trees/no_seasons/conifer_custom.png", 15),
 
-      this.createNewTree(createNewImg, "assets/trees/no_seaons/green_conifer.png", 15),
+      this.createNewTree(createNewImg, "assets/trees/no_seasons/green_conifer.png", 15),
       this.createNewTree(createNewImg, "assets/trees/summer/birch_summer.png", 15),
       this.createNewTree(createNewImg, "assets/trees/summer/tree_birch_custom.png", 15),
 

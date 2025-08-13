@@ -404,7 +404,6 @@ export class CanvasForestComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.busyCells.length === this.allCells.length) {
       console.log("No place anymore, we stop the counter :)")
       this.forestControlService.stopTimer()
-      this.localStorageService.clearAll()
       this.forestControlService.setCompleteForest(true)
     }
   }
