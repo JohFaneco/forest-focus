@@ -94,6 +94,9 @@ export class TreeService {
       case SeasonEnum.Winter:
         listTree = this.getListTreeWinter(createNewImg)
         break
+      case SeasonEnum.Spring:
+        listTree = this.getListTreeSpring(createNewImg)
+        break
       default:
         listTree = this.getListTreeSummer(createNewImg)
         break
@@ -200,4 +203,22 @@ export class TreeService {
       this.createNewTree(createNewImg, "assets/trees/winter/winter_willow_tree_2.png", 3)
     ]
   }
+
+  /**
+ * Get the list of the spring trees
+ * @param createNewImg callback function
+ */
+  private getListTreeSpring(createNewImg: (src: string) => HTMLImageElement): TreeImage[] {
+    return [
+      this.createNewTree(createNewImg, "assets/trees/spring/spring_flower_pink_1.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/spring/spring_flower_pink_2.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/spring/spring_flower_white_1.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/spring/spring_flower_white_2.png", 10),
+      this.createNewTree(createNewImg, "assets/trees/spring/spring_laburnum.png", 6),
+      this.createNewTree(createNewImg, "assets/trees/spring/spring_tree_1.png", 8),
+      this.createNewTree(createNewImg, "assets/trees/spring/spring_tree_2.png", 8)
+    ]
+  }
+
+
 }
