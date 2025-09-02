@@ -1,10 +1,25 @@
+@font-face {
+  font-family: 'Pixelify Sans';
+  src: url('/assets/fonts/PixelifySans-VariableFont_wght.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 html {
   height: 100%;
   background: linear-gradient(#888, #222) no-repeat;
 }
-body, button, label, p {
-    font-family: 'Pixelify Sans', sans-serif;
+
+
+body,
+button,
+label,
+p {
+  font-family: 'Pixelify Sans', system-ui, sans-serif;
+  font-weight: 400;
 }
+
 body {
   font-size: 1.1rem;
   margin: 0;
